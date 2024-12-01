@@ -13,3 +13,5 @@ class Student(Base):
     group_id: Mapped[int] = mapped_column(ForeignKey('university_group.id'))
 
     group: Mapped["UniversityGroup"] = relationship(back_populates="students", lazy="joined")
+    statistics: Mapped[list["Statistics"]] = relationship("Statistics", back_populates="student")
+

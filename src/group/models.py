@@ -9,3 +9,4 @@ class UniversityGroup(Base):
     group_name: Mapped[str] = mapped_column(String(25), nullable=False, unique=True)
 
     students: Mapped[list["Student"]] = relationship(back_populates="group", lazy="joined")
+    assignments: Mapped[list["Assignment"]] = relationship("Assignment", back_populates="group")

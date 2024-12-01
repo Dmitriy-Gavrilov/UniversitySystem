@@ -1,6 +1,13 @@
 from src.base.models import Base
 from sqlalchemy import String, Enum
 from sqlalchemy.orm import Mapped, mapped_column
+from enum import Enum as PyEnum
+
+
+class UserRole(str, PyEnum):
+    ADMIN = "admin"
+    STUDENT = "student"
+    TEACHER = "teacher"
 
 
 class User(Base):
@@ -9,4 +16,4 @@ class User(Base):
     user_id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     login: Mapped[str] = mapped_column(String(50), nullable=False, unique=True)
     password: Mapped[str] = mapped_column(String(128), nullable=False)
-    role: Mapped[str] = mapped_column(Enum("admin", "student", "teacher", name="user_role"), nullable=False)
+    role: Mapped[UserRole] = mapped_column(Enum(UserRole, name="user_role"), nullable=False)

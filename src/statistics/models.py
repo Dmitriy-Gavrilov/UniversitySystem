@@ -10,8 +10,8 @@ class Statistics(Base):
     subject_id: Mapped[int] = mapped_column(ForeignKey('subject.id'), nullable=False)
     teacher_id: Mapped[int] = mapped_column(ForeignKey('teacher.id'), nullable=False)
     avg_grades: Mapped[float | None] = mapped_column(Float, nullable=True)
-    exam_grade = Mapped[int | None] = mapped_column(Integer, nullable=True)
+    exam_grade: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
-    student: Mapped["Student"] = relationship(lazy="joined")
-    teacher: Mapped["Teacher"] = relationship(lazy="joined")
-    subject: Mapped["Subject"] = relationship(lazy="joined")
+    student: Mapped["Student"] = relationship("Student", back_populates="statistics", lazy="joined")
+    teacher: Mapped["Teacher"] = relationship("Teacher", back_populates="statistics", lazy="joined")
+    subject: Mapped["Subject"] = relationship("Subject", back_populates="statistics", lazy="joined")
