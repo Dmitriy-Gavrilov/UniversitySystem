@@ -1,10 +1,10 @@
 from src.base.models import Base
 from sqlalchemy import ForeignKey, Enum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from enum import Enum as PyEnum
+from enum import StrEnum
 
 
-class WorkType(str, PyEnum):
+class WorkType(StrEnum):
     LECTURE = "lecture"
     LABORATORY_WORK = "laboratory_work"
     EXAM = "exam"

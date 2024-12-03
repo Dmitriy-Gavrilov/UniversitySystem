@@ -1,10 +1,10 @@
 from src.base.models import Base
 from sqlalchemy import String, Enum
 from sqlalchemy.orm import Mapped, mapped_column
-from enum import Enum as PyEnum
+from enum import StrEnum
 
 
-class UserRole(str, PyEnum):
+class UserRole(StrEnum):
     ADMIN = "admin"
     STUDENT = "student"
     TEACHER = "teacher"
