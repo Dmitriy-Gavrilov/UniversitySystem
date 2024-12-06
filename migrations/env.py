@@ -19,14 +19,14 @@ from src.task.models import Task
 from src.teacher.models import Teacher
 from src.user.models import User
 
-from src.settings import database_url
+from src.settings import DATABASE_URL
 
 config = context.config
 
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-config.set_main_option("sqlalchemy.url", database_url)
+config.set_main_option("sqlalchemy.url", DATABASE_URL)
 
 target_metadata = Base.metadata
 
