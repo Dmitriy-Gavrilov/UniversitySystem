@@ -1,5 +1,5 @@
 from src.base.models import Base
-from sqlalchemy import String, Enum
+from sqlalchemy import String, Enum, Integer
 from sqlalchemy.orm import Mapped, mapped_column
 from enum import StrEnum
 

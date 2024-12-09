@@ -1,8 +1,8 @@
 """empty message
 
-Revision ID: 913dc97494a9
-Revises: 
-Create Date: 2024-12-03 15:47:34.750277
+Revision ID: 94e1deff5bb1
+Revises: 2021aa649d87
+Create Date: 2024-12-09 13:13:01.607905
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '913dc97494a9'
+revision: str = '94e1deff5bb1'
+# down_revision: Union[str, None] = '2021aa649d87'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -37,14 +38,13 @@ def upgrade() -> None:
     sa.UniqueConstraint('group_name')
     )
     op.create_table('user',
-    sa.Column('user_id', sa.Integer(), autoincrement=True, nullable=False),
     sa.Column('login', sa.String(length=50), nullable=False),
     sa.Column('password', sa.String(length=128), nullable=False),
     sa.Column('role', sa.Enum('ADMIN', 'STUDENT', 'TEACHER', name='user_role'), nullable=False),
     sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
     sa.Column('created_at', sa.DateTime(), nullable=False),
     sa.Column('updated_at', sa.DateTime(), nullable=False),
-    sa.PrimaryKeyConstraint('user_id', 'id'),
+    sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('login')
     )
     op.create_table('administrator',
@@ -120,7 +120,6 @@ def upgrade() -> None:
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('report',
-    sa.Column('report_id', sa.Integer(), autoincrement=True, nullable=False),
     sa.Column('report_name', sa.String(length=100), nullable=False),
     sa.Column('load_date', sa.DateTime(), nullable=False),
     sa.Column('accept_date', sa.DateTime(), nullable=True),
@@ -132,7 +131,7 @@ def upgrade() -> None:
     sa.Column('updated_at', sa.DateTime(), nullable=False),
     sa.ForeignKeyConstraint(['student_id'], ['student.id'], ),
     sa.ForeignKeyConstraint(['task_id'], ['task.id'], ),
-    sa.PrimaryKeyConstraint('report_id', 'id')
+    sa.PrimaryKeyConstraint('id')
     )
     # ### end Alembic commands ###
 
