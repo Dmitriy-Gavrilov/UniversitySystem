@@ -7,7 +7,6 @@ from datetime import datetime
 class Report(Base):
     __tablename__ = "report"
 
-    report_id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     report_name: Mapped[str] = mapped_column(String(100), nullable=False)
     load_date: Mapped[datetime] = mapped_column(default=func.now(), nullable=False)
     accept_date: Mapped[datetime | None] = mapped_column(onupdate=func.now(), nullable=True)
