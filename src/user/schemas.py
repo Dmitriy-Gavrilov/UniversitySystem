@@ -1,18 +1,18 @@
-from src.base.schemas import BaseCreateSchema, BaseModelSchema
+from src.base.schemas import BaseSchema, BaseModelSchema
 from pydantic import Field
 
 from models import UserRole
 
 
-class BaseUserSchema:
+class BaseUserSchema(BaseSchema):
     login: str = Field(max_length=50)
     password: str = Field(max_length=128)
     role: UserRole
 
 
-class UserSchema(BaseModelSchema, BaseUserSchema):
+class UserSchema(BaseUserSchema):
     pass
 
 
-class CreateUserSchema(BaseCreateSchema, BaseUserSchema):
+class CreateUserSchema(BaseUserSchema, BaseModelSchema):
     pass

@@ -1,17 +1,14 @@
-from src.base.schemas import BaseModelSchema, BaseCreateSchema
+from src.base.schemas import BaseModelSchema, BaseSchema
 from pydantic import Field
 
 
-class BaseGroupSchema:
+class BaseGroupSchema(BaseSchema):
     group_name: str = Field(max_length=25)
 
-    students: list["StudentSchema"] = Field(default_factory=list)
-    assignments: list["AssignmentSchema"] = Field(default_factory=list)
 
-
-class GroupCreateSchema(BaseCreateSchema, BaseGroupSchema):
+class GroupCreateSchema(BaseGroupSchema):
     pass
 
 
-class GroupSchema(BaseModelSchema, BaseGroupSchema):
+class GroupSchema(BaseGroupSchema, BaseModelSchema):
     pass

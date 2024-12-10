@@ -1,19 +1,16 @@
-from src.base.schemas import BaseCreateSchema, BaseModelSchema
+from src.base.schemas import BaseSchema, BaseModelSchema
 from pydantic import Field
 
 
-class BaseTeacherSchema:
+class BaseTeacherSchema(BaseSchema):
     surname: str = Field(max_length=50)
     name: str = Field(max_length=50)
     patronym: str = Field(max_length=50)
 
-    assignments: list["AssignmentSchema"] = Field(default_factory=list)
-    statistics: list["StatisticsSchema"] = Field(default_factory=list)
 
-
-class CreateTeacherSchema(BaseCreateSchema, BaseTeacherSchema):
+class CreateTeacherSchema(BaseTeacherSchema):
     pass
 
 
-class TeacherSchema(BaseModelSchema, BaseTeacherSchema):
+class TeacherSchema(BaseTeacherSchema, BaseModelSchema):
     user_id: int

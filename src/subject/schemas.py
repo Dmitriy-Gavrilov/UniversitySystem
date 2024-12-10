@@ -1,11 +1,15 @@
 from pydantic import Field
 
-from src.base.schemas import BaseSchema
-from typing import Optional
+from src.base.schemas import BaseSchema, BaseModelSchema
 
 
-class SubjectSchema(BaseSchema):
+class BaseSubjectSchema(BaseSchema):
     subject_name: str = Field(max_length=100)
 
-    assignments: Optional["AssignmentSchema"] = None
-    statistics: Optional["StatisticsSchema"] = None
+
+class CreateSubjectSchema(BaseSubjectSchema):
+    pass
+
+
+class SubjectSchema(BaseSubjectSchema, BaseModelSchema):
+    pass

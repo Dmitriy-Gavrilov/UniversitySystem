@@ -1,9 +1,9 @@
-from src.base.schemas import BaseCreateSchema, BaseModelSchema
+from src.base.schemas import BaseSchema, BaseModelSchema
 from pydantic import Field
 from datetime import datetime
 
 
-class BaseReportSchema:
+class BaseReportSchema(BaseSchema):
     report_name: str = Field(max_length=100)
     load_date: datetime
     accept_date: datetime | None
@@ -11,12 +11,10 @@ class BaseReportSchema:
     task_id: int
     student_id: int
 
-    task: list["TaskSchema"] = Field(default_factory=list)
 
-
-class CreateReportSchema(BaseCreateSchema, BaseReportSchema):
+class CreateReportSchema(BaseReportSchema):
     pass
 
 
-class ReportSchema(BaseModelSchema, BaseReportSchema):
+class ReportSchema(BaseReportSchema, BaseModelSchema):
     pass

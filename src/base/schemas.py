@@ -3,8 +3,12 @@ from pydantic import BaseModel, ConfigDict
 from datetime import datetime
 
 
-class BaseCreateSchema(BaseModel):
+class BaseSchema(BaseModel):
     config = ConfigDict(from_attributes=True)
+
+
+class BaseCreateSchema(BaseSchema):
+    pass
 
 
 class BaseModelSchema(BaseCreateSchema):
