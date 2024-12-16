@@ -2,6 +2,8 @@ from src.base.models import Base
 from sqlalchemy import ForeignKey, Float, Integer
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
+from src.teacher.models import Teacher
+
 
 class Statistics(Base):
     __tablename__ = "statistics"
@@ -13,5 +15,5 @@ class Statistics(Base):
     exam_grade: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
     student: Mapped["Student"] = relationship("Student", back_populates="statistics", lazy="joined")
-    teacher: Mapped["Teacher"] = relationship("Teacher", back_populates="statistics", lazy="joined")
+    teacher: Mapped[Teacher] = relationship("Teacher", back_populates="statistics", lazy="joined")
     subject: Mapped["Subject"] = relationship("Subject", back_populates="statistics", lazy="joined")
