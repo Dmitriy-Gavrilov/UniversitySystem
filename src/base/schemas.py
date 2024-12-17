@@ -4,7 +4,8 @@ from datetime import datetime
 
 
 class BaseSchema(BaseModel):
-    config = ConfigDict(from_attributes=True)
+    class Config:
+        from_attributes = True
 
 
 class BaseCreateSchema(BaseSchema):
