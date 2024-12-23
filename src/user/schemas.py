@@ -10,9 +10,9 @@ class BaseUserSchema(BaseSchema):
     role: UserRole
 
 
-class UserSchema(BaseUserSchema):
+class CreateUserSchema(BaseUserSchema):
     pass
 
 
-class CreateUserSchema(BaseUserSchema, BaseModelSchema):
+class UserSchema(BaseUserSchema, BaseModelSchema):
     pass

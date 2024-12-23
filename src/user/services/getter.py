@@ -11,3 +11,9 @@ class UserGetter:
         if existing_user := await self.repo.get(login=login):
             if Hasher().verify_password(password, existing_user.password):
                 return existing_user
+        raise
+
+    async def get_by_login(self, login: str) -> User:
+        if existing_user := await self.repo.get(login=login):
+            return existing_user
+        raise
