@@ -8,6 +8,7 @@ from src.student.models import Student
 from src.student.schemas import CreateStudentSchema, StudentSchema
 from src.core.database.dependencies import get_session
 from src.student.services.creator import StudentCreator
+from src.student.services.service import StudentService
 from src.user.models import User
 from src.user.services.getter import UserGetter
 
@@ -21,11 +22,10 @@ async def get_all_students(session: AsyncSession = Depends(get_session)):
     return [StudentSchema.model_validate(student) for student in students]
 
 
-@router.get("/{student_id}", summary="Получить данные конкретного студента", response_model=StudentSchema)
+@router.get("/{student_id}", summary="Получить данные студента по ID", response_model=StudentSchema)
 async def get_student_by_id(student_id: int, session: AsyncSession = Depends(get_session)):
-    repo = Repository[Student](Student, session)
-    student = await repo.get(id=student_id)
-    return StudentSchema.model_validate(student)
+    student_service = StudentService(Repository[Student](Student, session))
+    return await student_service.get_by_id(student_id)
 
 
 @router.post("/", summary="Создать студента", response_model=StudentSchema, status_code=status.HTTP_201_CREATED)
@@ -42,15 +42,16 @@ async def create_student(
 
     student_creator = StudentCreator(user, group, Repository[Student](Student, session))
     created_student = await student_creator.create(student_data)
+
     return created_student
     # модель создается в момент входа через логин и пароль
-    # Поверка, что юзер привязан именно к студенту?
+    # Проверка, что юзер привязан именно к студенту?
 
 
 @router.delete("/{student_id}", summary="Удалить студента", response_model=int)
 async def delete_student(student_id: int, session: AsyncSession = Depends(get_session)):
-    repo = Repository[Student](Student, session)
-    await repo.delete(student_id)
+    student_service = StudentService(Repository[Student](Student, session))
+    await student_service.delete(student_id)
     return student_id
 
 
@@ -60,4 +61,5 @@ async def update_student(
         student_data: CreateStudentSchema,
         session: AsyncSession = Depends(get_session)
 ):
-    repo = Repository[Student](Student, session)
+    student_service = StudentService(Repository[Student](Student, session))
+    return await student_service.update(student_id, student_data)

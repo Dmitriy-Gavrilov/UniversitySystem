@@ -2,11 +2,11 @@ from src.core.database.repo import Repository
 from src.group.models import UniversityGroup
 from src.student.models import Student
 from src.student.schemas import CreateStudentSchema
-from src.student.exceptions import StudentNotFoundError, StudentAlreadyExistsError
+from src.student.exceptions import StudentAlreadyExistsError
 from src.user.models import User
 
 
-class StudentService:
+class StudentCreator:
     def __init__(
             self,
             user: User,
