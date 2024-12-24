@@ -14,7 +14,8 @@ class GroupService:
     async def create(self, group: GroupCreateSchema) -> UniversityGroup:
         group_model = UniversityGroup(group_name=group.group_name)
 
-        if await self.repo.get(group_name=group.group_name):
+        existing_group = await self.repo.get(group_name=group.group_name)
+        if existing_group:
             raise GroupAlreadyExistsError()
 
         await self.repo.create(group_model)
