@@ -3,6 +3,7 @@ from sqlalchemy import String, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.group.models import UniversityGroup
+from src.report.models import Report
 
 
 class Student(Base):
@@ -17,5 +18,5 @@ class Student(Base):
     group: Mapped[UniversityGroup] = relationship("UniversityGroup", back_populates="students", lazy="joined")
     statistics: Mapped[list["Statistics"]] = relationship("Statistics", back_populates="student", lazy="joined",
                                                           cascade="all, delete")
-    reports: Mapped[list["Report"]] = relationship("Report", back_populates="student", lazy="joined",
+    reports: Mapped[list[Report]] = relationship("Report", back_populates="student", lazy="joined",
                                                    cascade="all, delete")
