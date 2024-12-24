@@ -8,9 +8,9 @@ from src.teacher.models import Teacher
 class Statistics(Base):
     __tablename__ = "statistics"
 
-    student_id: Mapped[int] = mapped_column(ForeignKey('student.id'), nullable=False)
-    subject_id: Mapped[int] = mapped_column(ForeignKey('subject.id'), nullable=False)
-    teacher_id: Mapped[int] = mapped_column(ForeignKey('teacher.id'), nullable=False)
+    student_id: Mapped[int] = mapped_column(ForeignKey('student.id', ondelete="CASCADE"), nullable=False)
+    subject_id: Mapped[int] = mapped_column(ForeignKey('subject.id', ondelete="CASCADE"), nullable=False)
+    teacher_id: Mapped[int | None] = mapped_column(ForeignKey('teacher.id', ondelete="SET NULL"), nullable=False)
     avg_grades: Mapped[float | None] = mapped_column(Float, nullable=True)
     exam_grade: Mapped[int | None] = mapped_column(Integer, nullable=True)
 

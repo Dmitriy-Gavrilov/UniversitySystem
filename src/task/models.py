@@ -8,6 +8,6 @@ class Task(Base):
 
     task_name: Mapped[str] = mapped_column(String(100), nullable=False)
     points: Mapped[int] = mapped_column(nullable=False)
-    assignment_id: Mapped[int] = mapped_column(ForeignKey('assignment.id'))
+    assignment_id: Mapped[int] = mapped_column(ForeignKey('assignment.id', ondelete="CASCADE"))
 
-    reports: Mapped[list["Report"]] = relationship(back_populates="task", lazy="joined")
+    reports: Mapped[list["Report"]] = relationship(back_populates="task", lazy="joined", cascade="all, delete")
