@@ -1,5 +1,5 @@
 from src.core.database.repo import Repository
-from src.core.password_hasher import Hasher
+from src.group.exceptions import GroupNotFoundError
 from src.group.models import UniversityGroup
 
 
@@ -11,4 +11,4 @@ class GroupGetter:
         existing_group = await self.repo.get(id=group_id)
         if existing_group:
             return existing_group
-        raise ValueError(f"Group with id {group_id} not found")
+        raise GroupNotFoundError()

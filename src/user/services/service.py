@@ -19,7 +19,7 @@ class UserService:
             role=user.role
         )
         if await self.repo.get(login=user.login):
-            raise UserAlreadyExistsError
+            raise UserAlreadyExistsError()
         await self.repo.create(user_model)
         created_user = await self.repo.get(login=user.login)
         return created_user
@@ -27,10 +27,10 @@ class UserService:
     async def delete(self, user_id: int) -> None:
         if await self.repo.get(id=user_id):
             return await self.repo.delete(user_id)
-        raise UserNotFoundError
+        raise UserNotFoundError()
 
     async def get_by_id(self, user_id: int) -> User:
         user = await self.repo.get(id=user_id)
         if user:
             return user
-        raise UserNotFoundError
+        raise UserNotFoundError()

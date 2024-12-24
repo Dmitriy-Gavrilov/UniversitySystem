@@ -14,17 +14,17 @@ class StudentService:
     async def delete(self, student_id: int) -> None:
         if await self.repo.get(id=student_id):
             return await self.repo.delete(student_id)
-        raise StudentNotFoundError
+        raise StudentNotFoundError()
 
     async def get_by_id(self, student_id: int) -> Student:
         student = await self.repo.get(id=student_id)
         if student:
             return student
-        raise StudentNotFoundError
+        raise StudentNotFoundError()
 
     async def update(self, student_id: int, new_data: CreateStudentSchema) -> Student:
         student = await self.repo.get(id=student_id)
         if student:
             await self.repo.update(student_id, new_data.model_dump())
             return await self.repo.get(id=student_id)
-        raise StudentNotFoundError
+        raise StudentNotFoundError()

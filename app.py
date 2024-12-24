@@ -23,7 +23,7 @@ app = FastAPI(lifespan=lifespan, title='University System', debug=True)
 
 @app.get("/")
 def home_page():
-    return {"message": "Hello World"}
+    return {"message": "Start page"}
 
 
 app.include_router(router_students)

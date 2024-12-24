@@ -2,14 +2,18 @@ from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.database.repo import Repository
+from src.core.database.dependencies import get_session
+
 from src.group.models import UniversityGroup
 from src.group.services.getter import GroupGetter
+
 from src.student.models import Student
 from src.student.schemas import CreateStudentSchema, StudentSchema
-from src.core.database.dependencies import get_session
 from src.student.services.creator import StudentCreator
 from src.student.services.service import StudentService
+
 from src.user.models import User
+from src.user.schemas import CreateUserSchema
 from src.user.services.getter import UserGetter
 
 router = APIRouter(prefix="/students", tags=["Students"])
@@ -31,11 +35,11 @@ async def get_student_by_id(student_id: int, session: AsyncSession = Depends(get
 @router.post("/", summary="Создать студента", response_model=StudentSchema, status_code=status.HTTP_201_CREATED)
 async def create_student(
         student_data: CreateStudentSchema,
-        user_login: str,
+        user_data: CreateUserSchema,
         session: AsyncSession = Depends(get_session)
 ):
     user_getter = UserGetter(Repository[User](User, session))
-    user = await user_getter.get_by_login(user_login)
+    user = await user_getter.get_for_login(user_data.login, user_data.password)
 
     group_getter = GroupGetter(Repository[UniversityGroup](UniversityGroup, session))
     group = await group_getter.get_by_id(student_data.group_id)

@@ -15,19 +15,20 @@ class GroupService:
         group_model = UniversityGroup(group_name=group.group_name)
 
         if await self.repo.get(group_name=group.group_name):
-            raise GroupAlreadyExistsError
+            raise GroupAlreadyExistsError()
 
         await self.repo.create(group_model)
         created_group = await self.repo.get(group_name=group.group_name)
         return created_group
 
     async def delete(self, group_id: int) -> None:
-        if await self.repo.get(id=group_id):
+        group = await self.repo.get(id=group_id)
+        if group:
             return await self.repo.delete(group_id)
-        raise GroupNotFoundError
+        raise GroupNotFoundError()
 
     async def get_by_id(self, group_id: int) -> UniversityGroup:
         group = await self.repo.get(id=group_id)
         if group:
             return group
-        raise GroupNotFoundError
+        raise GroupNotFoundError()

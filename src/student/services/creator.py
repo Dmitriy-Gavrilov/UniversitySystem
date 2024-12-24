@@ -26,6 +26,6 @@ class StudentCreator:
             group=self.group,
         )
         if await self.repo.get(**student.model_dump()):
-            raise StudentAlreadyExistsError
+            raise StudentAlreadyExistsError()
         await self.repo.create(student_model)
         return await self.repo.get(**student.model_dump())
