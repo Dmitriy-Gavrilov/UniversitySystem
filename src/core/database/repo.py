@@ -1,6 +1,6 @@
 import asyncio
 from typing import Generic, TypeVar, Type
-from sqlalchemy import select, delete
+from sqlalchemy import select, delete, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 M = TypeVar('M')
@@ -22,19 +22,19 @@ class Repository(Generic[M]):
 
     async def get(self, **kwargs) -> M:
         async with asyncio.Lock():
-            await self._get(**kwargs)
+            return await self._get(**kwargs)
 
     async def _get(self, **kwargs) -> M:
         async with self.session:
             statement = select(self.Model).filter_by(**kwargs)
             result = await self.session.execute(statement)
-            await result.scalars().first()
+            return result.scalars().first()
 
     async def get_all(self) -> list[M]:
         async with self.session:
             statement = select(self.Model)
             result = await self.session.execute(statement)
-            return result.scalars().all()
+            return result.unique().scalars().all()
 
     async def delete(self, object_id: int) -> None:
         async with asyncio.Lock():
@@ -49,3 +49,23 @@ class Repository(Generic[M]):
             except (Exception,) as exc:
                 await self.session.rollback()
                 raise exc
+
+    async def update(self, object_id: int, data: dict) -> None:
+        async with asyncio.Lock():
+            await self._update(object_id, data)
+
+    async def _update(self, object_id: int, data: dict) -> None:
+        async with self.session:
+            try:
+                statement = (
+                    update(self.Model)
+                    .where(self.Model.id == object_id)
+                    .values(**data)
+                )
+                await self.session.execute(statement)
+                await self.session.commit()
+            except (Exception,) as exc:
+                await self.session.rollback()
+                raise exc
+
+# update

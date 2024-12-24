@@ -12,7 +12,6 @@ class UserRole(StrEnum):
 
 class User(Base):
     __tablename__ = "user"
-
     login: Mapped[str] = mapped_column(String(50), nullable=False, unique=True)
     password: Mapped[str] = mapped_column(String(128), nullable=False)
     role: Mapped[UserRole] = mapped_column(Enum(UserRole, name="user_role"), nullable=False)
