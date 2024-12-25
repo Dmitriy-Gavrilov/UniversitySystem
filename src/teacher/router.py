@@ -29,7 +29,7 @@ async def get_teacher_by_id(teacher_id: int, session: AsyncSession = Depends(get
 
 
 @router.post("/", summary="Создать преподавателя", response_model=TeacherSchema, status_code=status.HTTP_201_CREATED)
-async def create_student(
+async def create_teacher(
         teacher_data: CreateTeacherSchema,
         user_data: CreateUserSchema,
         session: AsyncSession = Depends(get_session)
@@ -44,7 +44,7 @@ async def create_student(
 
 
 @router.put("/{teacher_id}", summary="Обновить данные преподавателя", response_model=TeacherSchema)
-async def update_student(
+async def update_teacher(
         teacher_id: int,
         teacher_data: CreateTeacherSchema,
         session: AsyncSession = Depends(get_session)
@@ -54,7 +54,7 @@ async def update_student(
 
 
 @router.delete("/{teacher_id}", summary="Удалить преподавателя", response_model=int)
-async def delete_student(
+async def delete_teacher(
         teacher_id: int,
         session: AsyncSession = Depends(get_session)):
     teacher_service = TeacherService(Repository[Teacher](Teacher, session))
