@@ -9,6 +9,7 @@ from src.student.router import router as router_students
 from src.user.router import router as router_users
 from src.group.router import router as router_groups
 from src.teacher.router import router as router_teachers
+from src.subject.router import router as router_subjects
 
 
 @asynccontextmanager
@@ -31,3 +32,4 @@ app.include_router(router_students)
 app.include_router(router_users)
 app.include_router(router_groups)
 app.include_router(router_teachers)
+app.include_router(router_subjects)
