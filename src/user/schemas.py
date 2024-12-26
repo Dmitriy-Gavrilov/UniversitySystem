@@ -1,7 +1,7 @@
-from src.base.schemas import BaseSchema, BaseModelSchema
 from pydantic import Field
 
-from .models import UserRole
+from src.base.schemas import BaseSchema, BaseModelSchema
+from src.user.models import UserRole
 
 
 class BaseUserSchema(BaseSchema):

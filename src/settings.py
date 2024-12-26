@@ -3,3 +3,5 @@ from dotenv import load_dotenv
 
 load_dotenv()
 DATABASE_URL = os.getenv("DATABASE_URL")
+SECRET_KEY = os.getenv('SECRET_KEY')
+JWT_ACCESS_COOKIE_NAME = os.getenv('JWT_COOKIE_NAME')

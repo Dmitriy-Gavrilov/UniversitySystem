@@ -1,7 +1,8 @@
-from fastapi import APIRouter, Depends, status, Query
+from fastapi import APIRouter, Depends, status, Query, Request
 from sqlalchemy import inspect
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.auth.router import security
 from src.core.database.repo import Repository
 from src.core.database.dependencies import get_session
 
@@ -34,10 +35,20 @@ router = APIRouter(prefix="/students", tags=["Students"])
 #         students = await repo.get_all()
 #     return [StudentSchema.model_validate(student) for student in students]
 
-@router.get("/", summary="Получить всех студентов", response_model=list[ResponseStudentSchema])
+@router.get(
+    path="/",
+    summary="Получить всех студентов",
+    response_model=list[ResponseStudentSchema],
+    dependencies=[Depends(security.access_token_required)],
+)
 async def get_all_students(
+        request: Request,
         group_name: str | None = Query(None, description="Название группы для фильтрации"),
-        session: AsyncSession = Depends(get_session)):
+        session: AsyncSession = Depends(get_session),
+):
+    token = await security.get_access_token_from_request(request)
+    security.verify_token(token, verify_csrf=False)
+
     repo = Repository[Student](Student, session)
 
     if group_name:
@@ -60,18 +71,36 @@ async def get_all_students(
     return [ResponseStudentSchema.model_validate(student_to_dict(student)) for student in students]
 
 
-@router.get("/{student_id}", summary="Получить данные студента по ID", response_model=StudentSchema)
-async def get_student_by_id(student_id: int, session: AsyncSession = Depends(get_session)):
+@router.get(
+    path="/{student_id}",
+    summary="Получить данные студента по ID",
+    response_model=StudentSchema,
+    dependencies=[Depends(security.access_token_required)],
+)
+async def get_student_by_id(request: Request, student_id: int, session: AsyncSession = Depends(get_session)):
+    token = await security.get_access_token_from_request(request)
+    security.verify_token(token, verify_csrf=False)
+
     student_service = StudentService(Repository[Student](Student, session))
     return await student_service.get_by_id(student_id)
 
 
-@router.post("/", summary="Создать студента", response_model=StudentSchema, status_code=status.HTTP_201_CREATED)
+@router.post(
+    path="/",
+    summary="Создать студента",
+    response_model=StudentSchema,
+    status_code=status.HTTP_201_CREATED,
+    dependencies = [Depends(security.access_token_required)],
+)
 async def create_student(
         student_data: CreateStudentSchema,
         user_data: CreateUserSchema,
+        request: Request,
         session: AsyncSession = Depends(get_session)
 ):
+    token = await security.get_access_token_from_request(request)
+    security.verify_token(token, verify_csrf=False)
+
     user_getter = UserGetter(Repository[User](User, session))
     user = await user_getter.get_for_login(user_data.login, user_data.password)
 
@@ -86,18 +115,35 @@ async def create_student(
     # Проверка, что юзер привязан именно к студенту?
 
 
-@router.delete("/{student_id}", summary="Удалить студента", response_model=int)
-async def delete_student(student_id: int, session: AsyncSession = Depends(get_session)):
+@router.delete(
+    path="/{student_id}",
+    summary="Удалить студента",
+    response_model=int,
+    dependencies=[Depends(security.access_token_required)],
+)
+async def delete_student(request: Request, student_id: int, session: AsyncSession = Depends(get_session)):
+    token = await security.get_access_token_from_request(request)
+    security.verify_token(token, verify_csrf=False)
+
     student_service = StudentService(Repository[Student](Student, session))
     await student_service.delete(student_id)
     return student_id
 
 
-@router.put("/{student_id}", summary="Обновить данные студента", response_model=StudentSchema)
+@router.put(
+    path="/{student_id}",
+    summary="Обновить данные студента",
+    response_model=StudentSchema,
+    dependencies=[Depends(security.access_token_required)],
+)
 async def update_student(
         student_id: int,
+        request: Request,
         student_data: CreateStudentSchema,
         session: AsyncSession = Depends(get_session)
 ):
+    token = await security.get_access_token_from_request(request)
+    security.verify_token(token, verify_csrf=False)
+
     student_service = StudentService(Repository[Student](Student, session))
     return await student_service.update(student_id, student_data)
