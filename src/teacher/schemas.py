@@ -14,3 +14,7 @@ class CreateTeacherSchema(BaseTeacherSchema):
 
 class TeacherSchema(BaseTeacherSchema, BaseModelSchema):
     user_id: int
+
+
+class ResponseTeacherSchema(TeacherSchema):
+    subjects: list[str]

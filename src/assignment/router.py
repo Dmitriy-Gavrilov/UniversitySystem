@@ -9,7 +9,7 @@ from src.assignment.models import Assignment
 from src.teacher.models import Teacher
 from src.subject.models import Subject
 
-from src.assignment.schemas import AssignmentCreateSchema, AssignmentSchema
+from src.assignment.schemas import AssignmentCreateSchema, AssignmentSchema, ResponseAssignmentSchema
 from src.teacher.schemas import CreateTeacherSchema
 from src.subject.schemas import CreateSubjectSchema
 from src.group.schemas import GroupCreateSchema
@@ -24,7 +24,7 @@ from src.assignment.services.creator import AssignmentCreator
 router = APIRouter(prefix="/assignments", tags=["Assignments"])
 
 
-@router.get("/", summary="Получить все занятия", response_model=list[AssignmentSchema])
+@router.get("/", summary="Получить все занятия", response_model=list[ResponseAssignmentSchema])
 async def get_all_assignments(
         group_name: str | None = Query(None, description="Название группы для фильтрации"),
         surname: str | None = Query(None, description="Фамилия преподавателя"),
@@ -32,6 +32,9 @@ async def get_all_assignments(
         patronym: str | None = Query(None, description="Отчество преподавателя"),
         session: AsyncSession = Depends(get_session)):
     repo = Repository[Assignment](Assignment, session)
+    repo_subject = Repository[Subject](Subject, session)
+    repo_teacher = Repository[Teacher](Teacher, session)
+    repo_group = Repository[UniversityGroup](UniversityGroup, session)
     filters = []
 
     if group_name:
@@ -48,7 +51,23 @@ async def get_all_assignments(
 
     assignments = await repo.get_all(filters=filters)
 
-    return assignments
+    response = []
+
+    for assignment in assignments:
+        subject = await repo_subject.get(id=assignment.subject_id)
+        teacher = await repo_teacher.get(id=assignment.teacher_id)
+        group = await repo_group.get(id=assignment.group_id)
+
+        response.append(ResponseAssignmentSchema(
+            **assignment.__dict__,
+            subject_name=subject.subject_name,
+            teacher_surname=teacher.surname,
+            teacher_name=teacher.name,
+            teacher_patronym=teacher.patronym,
+            group_name=group.group_name
+        ))
+
+    return response
 
 
 @router.post("/", summary="Создать занятие", response_model=AssignmentSchema, status_code=status.HTTP_201_CREATED)

@@ -35,3 +35,11 @@ class AssignmentSchema(BaseAssignmentSchema, BaseModelSchema):
             teacher_id=model.teacher_id,
             group_id=model.group_id,
             time=model.time)
+
+
+class ResponseAssignmentSchema(AssignmentSchema):
+    subject_name: str
+    teacher_surname: str
+    teacher_name: str
+    teacher_patronym: str
+    group_name: str
