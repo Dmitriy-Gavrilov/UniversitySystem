@@ -32,30 +32,22 @@ async def get_all_assignments(
         patronym: str | None = Query(None, description="Отчество преподавателя"),
         session: AsyncSession = Depends(get_session)):
     repo = Repository[Assignment](Assignment, session)
+    filters = []
 
     if group_name:
         group_getter = GroupGetter(Repository[UniversityGroup](UniversityGroup, session))
         group = await group_getter.get_by_name(group_name)
         group_filter = Assignment.group_id == group.id
-    else:
-        group_filter = None
+        filters.append(group_filter)
 
     if surname and name and patronym:
         teacher_getter = TeacherGetter(Repository[Teacher](Teacher, session))
         teacher = await teacher_getter.get_by_full_name(surname, name, patronym)
         teacher_filter = Assignment.teacher_id = teacher.id
-    else:
-        teacher_filter = None
-
-    filters = []
-    if group_filter:
-        filters.append(group_filter)
-    if teacher_filter:
         filters.append(teacher_filter)
 
     assignments = await repo.get_all(filters=filters)
 
-    # Проверять что препод и группа свободны во время занятия
     return assignments
 
 
