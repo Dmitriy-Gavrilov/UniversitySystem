@@ -32,4 +32,5 @@ async def delete_user(
         session: AsyncSession = Depends(get_session)):
     user_service = UserService(Repository[User](User, session))
     await user_service.delete(user_id)
+    return user_id
 
