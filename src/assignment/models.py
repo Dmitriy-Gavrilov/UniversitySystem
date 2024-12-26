@@ -22,7 +22,6 @@ class Assignment(Base):
     teacher_id: Mapped[int] = mapped_column(ForeignKey('teacher.id', ondelete="CASCADE"), nullable=False)
     group_id: Mapped[int] = mapped_column(ForeignKey('university_group.id', ondelete="CASCADE"), nullable=False)
     time: Mapped[datetime] = mapped_column(nullable=False)
-    # Дата Время
 
     subject: Mapped[Subject] = relationship("Subject", back_populates="assignments", lazy="joined")
     teacher: Mapped["Teacher"] = relationship("Teacher", back_populates="assignments", lazy="joined")
