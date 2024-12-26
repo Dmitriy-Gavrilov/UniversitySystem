@@ -1,14 +1,28 @@
-from datetime import datetime
+from datetime import datetime, date, time
 
 from typing_extensions import Self
 
 from src.base.schemas import BaseSchema, BaseModelSchema
-from models import WorkType, Assignment
+from src.assignment.models import WorkType, Assignment
 
 
 class BaseAssignmentSchema(BaseSchema):
-    subject_id: int
     work_type: WorkType
+
+    @classmethod
+    async def to_datetime(cls, d: date, t: time):
+        return datetime.combine(d, t)
+
+
+# Дописать лекции и лабы?
+
+class AssignmentCreateSchema(BaseAssignmentSchema):
+    date: date
+    time: time
+
+
+class AssignmentSchema(BaseAssignmentSchema, BaseModelSchema):
+    subject_id: int
     teacher_id: int
     group_id: int
     time: datetime
@@ -21,13 +35,3 @@ class BaseAssignmentSchema(BaseSchema):
             teacher_id=model.teacher_id,
             group_id=model.group_id,
             time=model.time)
-
-
-# Дописать лекции и лабы?
-
-class AssignmentCreateSchema(BaseAssignmentSchema):
-    pass
-
-
-class AssignmentSchema(BaseAssignmentSchema, BaseModelSchema):
-    pass
