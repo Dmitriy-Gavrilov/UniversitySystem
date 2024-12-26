@@ -15,3 +15,7 @@ class CreateStudentSchema(BaseStudentSchema):
 
 class StudentSchema(BaseStudentSchema, BaseModelSchema):
     user_id: int
+
+
+class ResponseStudentSchema(StudentSchema):
+    group_name: str
