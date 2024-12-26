@@ -30,9 +30,12 @@ class Repository(Generic[M]):
             result = await self.session.execute(statement)
             return result.scalars().first()
 
-    async def get_all(self) -> list[M]:
+    async def get_all(self, filters: list = None) -> list[M]:
         async with self.session:
             statement = select(self.Model)
+            if filters:
+                for condition in filters:
+                    statement = statement.where(condition)
             result = await self.session.execute(statement)
             return result.unique().scalars().all()
 
@@ -67,5 +70,3 @@ class Repository(Generic[M]):
             except (Exception,) as exc:
                 await self.session.rollback()
                 raise exc
-
-# update
