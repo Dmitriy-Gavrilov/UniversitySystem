@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.database.repo import Repository
@@ -20,9 +20,17 @@ router = APIRouter(prefix="/students", tags=["Students"])
 
 
 @router.get("/", summary="Получить всех студентов", response_model=list[StudentSchema])
-async def get_all_students(session: AsyncSession = Depends(get_session)):
+async def get_all_students(
+        group_name: str | None = Query(None, description="Название группы для фильтрации"),
+        session: AsyncSession = Depends(get_session)):
     repo = Repository[Student](Student, session)
-    students = await repo.get_all()
+
+    if group_name:
+        group_getter = GroupGetter(Repository[UniversityGroup](UniversityGroup, session))
+        group = await group_getter.get_by_name(group_name)
+        students = await repo.get_all(filters=[Student.group_id == group.id])
+    else:
+        students = await repo.get_all()
     return [StudentSchema.model_validate(student) for student in students]
 
 

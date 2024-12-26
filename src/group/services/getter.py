@@ -12,3 +12,9 @@ class GroupGetter:
         if existing_group:
             return existing_group
         raise GroupNotFoundError()
+
+    async def get_by_name(self, group_name: str) -> UniversityGroup:
+        existing_group = await self.repo.get(group_name=group_name)
+        if existing_group:
+            return existing_group
+        raise GroupNotFoundError()
