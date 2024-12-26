@@ -3,6 +3,8 @@ from sqlalchemy import ForeignKey, DateTime, String, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from datetime import datetime
 
+from src.task.models import Task
+
 
 class Report(Base):
     __tablename__ = "report"
@@ -15,4 +17,5 @@ class Report(Base):
     task_id: Mapped[int] = mapped_column(ForeignKey('task.id', ondelete="CASCADE"))
     student_id: Mapped[int] = mapped_column(ForeignKey('student.id', ondelete="CASCADE"))
 
-    task: Mapped["Task"] = relationship(back_populates="reports", lazy="joined")
+    task: Mapped[Task] = relationship(back_populates="reports", lazy="joined")
+    student: Mapped["Student"] = relationship("Student", back_populates="reports", lazy="joined")

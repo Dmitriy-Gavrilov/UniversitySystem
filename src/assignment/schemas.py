@@ -12,10 +12,15 @@ class BaseAssignmentSchema(BaseSchema):
 
     @classmethod
     def from_model(cls, model: Assignment) -> Self:
-        return cls(subject_id=model.subject_id, )
+        return cls(
+            subject_id=model.subject_id,
+            work_type=model.work_type,
+            teacher_id=model.teacher_id,
+            group_id=model.group_id)
 
 
-# Лекции и лабы
+# Дописать лекции и лабы?
+
 
 class AssignmentCreateSchema(BaseAssignmentSchema):
     pass

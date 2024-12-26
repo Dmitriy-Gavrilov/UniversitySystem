@@ -26,10 +26,11 @@ async def create_user(
     return await user_creator.create(user_data)
 
 
-@router.delete("/", summary="Удалить пользователя", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/", summary="Удалить пользователя", response_model=int)
 async def delete_user(
         user_id: int,
         session: AsyncSession = Depends(get_session)):
     user_service = UserService(Repository[User](User, session))
     await user_service.delete(user_id)
-    # Проверять, что к юзеру никто не прикреплен / удалять юзера вместе с тем, кто прикреплен
+    return user_id
+
