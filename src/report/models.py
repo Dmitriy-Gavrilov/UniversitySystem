@@ -13,6 +13,7 @@ class Report(Base):
     load_date: Mapped[datetime] = mapped_column(default=func.now(), nullable=False)
     accept_date: Mapped[datetime | None] = mapped_column(onupdate=func.now(), nullable=True)
     grade: Mapped[int | None] = mapped_column(nullable=True)
+    # is_accepted
     task_id: Mapped[int] = mapped_column(ForeignKey('task.id', ondelete="CASCADE"))
     student_id: Mapped[int] = mapped_column(ForeignKey('student.id', ondelete="CASCADE"))
 
