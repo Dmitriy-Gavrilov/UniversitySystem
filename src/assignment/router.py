@@ -1,6 +1,4 @@
-from urllib.request import Request
-
-from fastapi import APIRouter, Depends, status, Query
+from fastapi import APIRouter, Depends, status, Query, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.auth.role_validator import AuthRoleVerifier
