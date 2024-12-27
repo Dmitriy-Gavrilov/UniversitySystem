@@ -46,7 +46,7 @@ async def get_all_assignments(
     if surname and name and patronym:
         teacher_getter = TeacherGetter(Repository[Teacher](Teacher, session))
         teacher = await teacher_getter.get_by_full_name(surname, name, patronym)
-        teacher_filter = Assignment.teacher_id = teacher.id
+        teacher_filter = Assignment.teacher_id == teacher.id
         filters.append(teacher_filter)
 
     assignments = await repo.get_all(filters=filters)

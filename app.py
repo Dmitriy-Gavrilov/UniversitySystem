@@ -14,6 +14,7 @@ from src.subject.router import router as router_subjects
 from src.admin.router import router as router_admins
 from src.assignment.router import router as router_assignments
 from src.auth.router import router as auth_router
+from src.task.router import router as router_tasks
 
 
 @asynccontextmanager
@@ -48,4 +49,5 @@ app.include_router(router_teachers)
 app.include_router(router_subjects)
 app.include_router(router_admins)
 app.include_router(router_assignments)
+app.include_router(router_tasks)
 app.include_router(auth_router)
