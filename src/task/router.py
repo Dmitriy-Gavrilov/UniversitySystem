@@ -1,7 +1,6 @@
 from fastapi import APIRouter, Depends, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.assignment.services.getter import AssignmentGetter
 from src.core.database.dependencies import get_session
 from src.core.database.repo import Repository
 
@@ -35,39 +34,34 @@ async def get_all_tasks(
     repo_teacher = Repository[Teacher](Teacher, session)
     repo_group = Repository[UniversityGroup](UniversityGroup, session)
 
-    tasks = []
-    if any([group_name, surname, name, patronym, subject_name]):
-        assignment_getter = AssignmentGetter(Repository[Assignment](Assignment, session))
-        if group_name:
-            group_getter = GroupGetter(Repository[UniversityGroup](UniversityGroup, session))
-            group = await group_getter.get_by_name(group_name)
-            print(group.group_name, group.id)
-            assignments = await assignment_getter.get_by_parameters([UniversityGroup.group_name == group.group_name])
-            print("len===", len(assignments))
-            for i in assignments:
-                tasks.append(*await repo_task.get_all(Task.assignment_id == i.id))
+    filters = []
 
-        # if surname and name and patronym:
-        #     teacher_getter = TeacherGetter(Repository[Teacher](Teacher, session))
-        #     teacher = await teacher_getter.get_by_full_name(surname, name, patronym)
-        #     assignments = await assignment_getter.get_by_parameters([Teacher.id == teacher.id])
-        #     for i in assignments:
-        #         if i not in tasks:
-        #             tasks.append(*await repo_task.get_all(Task.assignment_id == i.id))
-        #
-        # if subject_name:
-        #     subject_getter = SubjectGetter(Repository[Subject](Subject, session))
-        #     subject = await subject_getter.get_by_name(subject_name)
-        #     assignments = await assignment_getter.get_by_parameters([Subject.id == subject.id])
-        #     for i in assignments:
-        #         tasks.append(*await repo_task.get_all(Task.assignment_id == i.id))
-    else:
-        tasks = await repo_task.get_all()
+    if group_name:
+        group_getter = GroupGetter(repo_group)
+        group = await group_getter.get_by_name(group_name)
+        filters.append(Assignment.group_id == group.id)
+
+    if surname and name and patronym:
+        teacher_getter = TeacherGetter(repo_teacher)
+        teacher = await teacher_getter.get_by_full_name(surname, name, patronym)
+        filters.append(Assignment.teacher_id == teacher.id)
+
+    if subject_name:
+        subject_getter = SubjectGetter(repo_subject)
+        subject = await subject_getter.get_by_name(subject_name)
+        filters.append(Assignment.subject_id == subject.id)
+
+    assignments = await repo_assignment.get_all(filters=filters)
+    assignment_ids = [assignment.id for assignment in assignments]
+
+    tasks = await repo_task.get_all(filters=[Task.assignment_id.in_(assignment_ids)])
 
     response = []
-
     for task in tasks:
-        assignment = await repo_assignment.get(id=task.assignment_id)
+        assignment = next((a for a in assignments if a.id == task.assignment_id), None)
+        if not assignment:
+            continue
+
         subject = await repo_subject.get(id=assignment.subject_id)
         teacher = await repo_teacher.get(id=assignment.teacher_id)
         group = await repo_group.get(id=assignment.group_id)
@@ -78,7 +72,8 @@ async def get_all_tasks(
             teacher_surname=teacher.surname,
             teacher_name=teacher.name,
             teacher_patronym=teacher.patronym,
-            group_name=group.group_name))
+            group_name=group.group_name
+        ))
 
     return response
 
