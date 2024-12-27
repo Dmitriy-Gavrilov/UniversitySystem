@@ -1,6 +1,9 @@
-from fastapi import APIRouter, Depends, status, Query
+from fastapi import APIRouter, Depends, status, Query, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.auth.role_validator import AuthRoleVerifier
+from src.auth.router import security
+from src.auth.utils import get_user
 from src.core.database.dependencies import get_session
 from src.core.database.repo import Repository
 
@@ -18,19 +21,30 @@ from src.group.services.getter import GroupGetter
 from src.teacher.services.getter import TeacherGetter
 from src.subject.services.getter import SubjectGetter
 from src.assignment.services.creator import AssignmentCreator
+from src.user.models import UserRole
 
 # from src.assignment.services.service import AssignmentService
 
 router = APIRouter(prefix="/assignments", tags=["Assignments"])
 
 
-@router.get("/", summary="Получить все занятия", response_model=list[ResponseAssignmentSchema])
+@router.get(
+    path="/",
+    summary="Получить все занятия",
+    response_model=list[ResponseAssignmentSchema],
+    dependencies=[Depends(security.access_token_required)],
+)
 async def get_all_assignments(
+        request: Request,
         group_name: str | None = Query(None, description="Название группы для фильтрации"),
         surname: str | None = Query(None, description="Фамилия преподавателя"),
         name: str | None = Query(None, description="Имя преподавателя"),
         patronym: str | None = Query(None, description="Отчество преподавателя"),
-        session: AsyncSession = Depends(get_session)):
+        session: AsyncSession = Depends(get_session)
+):
+    user = await get_user(request, session)
+    AuthRoleVerifier(user).verify(required_role=UserRole.STUDENT)
+
     repo = Repository[Assignment](Assignment, session)
     repo_subject = Repository[Subject](Subject, session)
     repo_teacher = Repository[Teacher](Teacher, session)
@@ -70,14 +84,24 @@ async def get_all_assignments(
     return response
 
 
-@router.post("/", summary="Создать занятие", response_model=AssignmentSchema, status_code=status.HTTP_201_CREATED)
+@router.post(
+    path="/",
+    summary="Создать занятие",
+    response_model=AssignmentSchema,
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(security.access_token_required)],
+)
 async def create_assignment(
+        request: Request,
         assignment_data: AssignmentCreateSchema,
         subject_data: CreateSubjectSchema,
         teacher_data: CreateTeacherSchema,
         group_data: GroupCreateSchema,
         session: AsyncSession = Depends(get_session)
 ):
+    user = await get_user(request, session)
+    AuthRoleVerifier(user).verify(required_role=UserRole.TEACHER)
+
     subject_getter = SubjectGetter(Repository[Subject](Subject, session))
     subject = await subject_getter.get_by_name(subject_data.subject_name)
 

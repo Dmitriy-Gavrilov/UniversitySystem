@@ -2,7 +2,9 @@ from fastapi import APIRouter, Depends, status, Query, Request
 from sqlalchemy import inspect
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.auth.role_validator import AuthRoleVerifier
 from src.auth.router import security
+from src.auth.utils import get_user
 from src.core.database.repo import Repository
 from src.core.database.dependencies import get_session
 
@@ -14,9 +16,7 @@ from src.student.schemas import CreateStudentSchema, StudentSchema, ResponseStud
 from src.student.services.creator import StudentCreator
 from src.student.services.service import StudentService
 
-from src.user.models import User
-from src.user.schemas import CreateUserSchema
-from src.user.services.getter import UserGetter
+from src.user.models import UserRole
 
 router = APIRouter(prefix="/students", tags=["Students"])
 
@@ -46,8 +46,8 @@ async def get_all_students(
         group_name: str | None = Query(None, description="Название группы для фильтрации"),
         session: AsyncSession = Depends(get_session),
 ):
-    token = await security.get_access_token_from_request(request)
-    security.verify_token(token, verify_csrf=False)
+    user = await get_user(request, session)
+    AuthRoleVerifier(user).verify(required_role=UserRole.STUDENT)
 
     repo = Repository[Student](Student, session)
 
@@ -78,8 +78,8 @@ async def get_all_students(
     dependencies=[Depends(security.access_token_required)],
 )
 async def get_student_by_id(request: Request, student_id: int, session: AsyncSession = Depends(get_session)):
-    token = await security.get_access_token_from_request(request)
-    security.verify_token(token, verify_csrf=False)
+    user = await get_user(request, session)
+    AuthRoleVerifier(user).verify(required_role=UserRole.STUDENT)
 
     student_service = StudentService(Repository[Student](Student, session))
     return await student_service.get_by_id(student_id)
@@ -94,15 +94,11 @@ async def get_student_by_id(request: Request, student_id: int, session: AsyncSes
 )
 async def create_student(
         student_data: CreateStudentSchema,
-        user_data: CreateUserSchema,
         request: Request,
         session: AsyncSession = Depends(get_session)
 ):
-    token = await security.get_access_token_from_request(request)
-    security.verify_token(token, verify_csrf=False)
-
-    user_getter = UserGetter(Repository[User](User, session))
-    user = await user_getter.get_for_login(user_data.login, user_data.password)
+    user = await get_user(request, session)
+    AuthRoleVerifier(user).verify(required_role=UserRole.STUDENT)
 
     group_getter = GroupGetter(Repository[UniversityGroup](UniversityGroup, session))
     group = await group_getter.get_by_id(student_data.group_id)
@@ -122,8 +118,8 @@ async def create_student(
     dependencies=[Depends(security.access_token_required)],
 )
 async def delete_student(request: Request, student_id: int, session: AsyncSession = Depends(get_session)):
-    token = await security.get_access_token_from_request(request)
-    security.verify_token(token, verify_csrf=False)
+    user = await get_user(request, session)
+    AuthRoleVerifier(user).verify(required_role=UserRole.ADMIN)
 
     student_service = StudentService(Repository[Student](Student, session))
     await student_service.delete(student_id)
@@ -142,8 +138,8 @@ async def update_student(
         student_data: CreateStudentSchema,
         session: AsyncSession = Depends(get_session)
 ):
-    token = await security.get_access_token_from_request(request)
-    security.verify_token(token, verify_csrf=False)
+    user = await get_user(request, session)
+    AuthRoleVerifier(user).verify(required_role=UserRole.STUDENT)
 
     student_service = StudentService(Repository[Student](Student, session))
     return await student_service.update(student_id, student_data)

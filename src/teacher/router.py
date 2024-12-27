@@ -2,7 +2,9 @@ from fastapi import APIRouter, Depends, status, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.assignment.models import Assignment
+from src.auth.role_validator import AuthRoleVerifier
 from src.auth.router import security
+from src.auth.utils import get_user
 from src.core.database.repo import Repository
 from src.core.database.dependencies import get_session
 from src.subject.models import Subject
@@ -11,9 +13,7 @@ from src.teacher.models import Teacher
 from src.teacher.schemas import CreateTeacherSchema, TeacherSchema, ResponseTeacherSchema
 from src.teacher.services.creator import TeacherCreator
 from src.teacher.services.service import TeacherService
-from src.user.models import User
-from src.user.schemas import CreateUserSchema
-from src.user.services.getter import UserGetter
+from src.user.models import UserRole
 
 router = APIRouter(prefix="/teachers", tags=["Teachers"])
 
@@ -22,11 +22,11 @@ router = APIRouter(prefix="/teachers", tags=["Teachers"])
     path="/",
     summary="Получить всех преподавателей",
     response_model=list[TeacherSchema],
-    dependencies = [Depends(security.access_token_required)],
+    dependencies=[Depends(security.access_token_required)],
 )
 async def get_all_teachers(request: Request, session: AsyncSession = Depends(get_session)):
-    token = security.get_access_token_from_request(request)
-    security.verify_token(token, verify_csrf=False)
+    user = await get_user(request, session)
+    AuthRoleVerifier(user).verify(required_role=UserRole.TEACHER)
 
     repo = Repository[Teacher](Teacher, session)
     teachers = await repo.get_all()
@@ -40,8 +40,8 @@ async def get_all_teachers(request: Request, session: AsyncSession = Depends(get
     dependencies=[Depends(security.access_token_required)],
 )
 async def get_teacher_by_id(request: Request, teacher_id: int, session: AsyncSession = Depends(get_session)):
-    token = security.get_access_token_from_request(request)
-    security.verify_token(token, verify_csrf=False)
+    user = await get_user(request, session)
+    AuthRoleVerifier(user).verify(required_role=UserRole.TEACHER)
 
     teacher_service = TeacherService(Repository[Teacher](Teacher, session))
     return await teacher_service.get_by_id(teacher_id)
@@ -51,11 +51,11 @@ async def get_teacher_by_id(request: Request, teacher_id: int, session: AsyncSes
     path="/full_info/{teacher_id}",
     summary="Получить данные преподавателя вместе с предметами",
     response_model=ResponseTeacherSchema,
-    dependencies = [Depends(security.access_token_required)],
+    dependencies=[Depends(security.access_token_required)],
 )
 async def get_full_info_teacher_by_id(request: Request, teacher_id: int, session: AsyncSession = Depends(get_session)):
-    token = security.get_access_token_from_request(request)
-    security.verify_token(token, verify_csrf=False)
+    user = await get_user(request, session)
+    AuthRoleVerifier(user).verify(required_role=UserRole.TEACHER)
 
     teacher_service = TeacherService(Repository[Teacher](Teacher, session))
     return await teacher_service.get_full_info(
@@ -74,15 +74,11 @@ async def get_full_info_teacher_by_id(request: Request, teacher_id: int, session
 )
 async def create_teacher(
         teacher_data: CreateTeacherSchema,
-        user_data: CreateUserSchema,
         request: Request,
         session: AsyncSession = Depends(get_session)
 ):
-    token = security.get_access_token_from_request(request)
-    security.verify_token(token, verify_csrf=False)
-
-    user_getter = UserGetter(Repository[User](User, session))
-    user = await user_getter.get_for_login(user_data.login, user_data.password)
+    user = await get_user(request, session)
+    AuthRoleVerifier(user).verify(required_role=UserRole.ADMIN)
 
     teacher_creator = TeacherCreator(user, Repository[Teacher](Teacher, session))
     created_teacher = await teacher_creator.create(teacher_data)
@@ -102,8 +98,8 @@ async def update_teacher(
         teacher_data: CreateTeacherSchema,
         session: AsyncSession = Depends(get_session)
 ):
-    token = security.get_access_token_from_request(request)
-    security.verify_token(token, verify_csrf=False)
+    user = await get_user(request, session)
+    AuthRoleVerifier(user).verify(required_role=UserRole.TEACHER)
 
     teacher_service = TeacherService(Repository[Teacher](Teacher, session))
     return await teacher_service.update(teacher_id, teacher_data)
@@ -112,15 +108,16 @@ async def update_teacher(
 @router.delete(
     path="/{teacher_id}",
     summary="Удалить преподавателя",
-    response_model=int
+    response_model=int,
+    dependencies=[Depends(security.access_token_required)],
 )
 async def delete_teacher(
         request: Request,
         teacher_id: int,
         session: AsyncSession = Depends(get_session)
 ):
-    token = security.get_access_token_from_request(request)
-    security.verify_token(token, verify_csrf=False)
+    user = await get_user(request, session)
+    AuthRoleVerifier(user).verify(required_role=UserRole.ADMIN)
 
     teacher_service = TeacherService(Repository[Teacher](Teacher, session))
     await teacher_service.delete(teacher_id)

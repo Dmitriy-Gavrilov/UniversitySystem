@@ -19,6 +19,7 @@ config = AuthXConfig(
     JWT_SECRET_KEY=SECRET_KEY,
     JWT_ACCESS_COOKIE_NAME=JWT_ACCESS_COOKIE_NAME,
     JWT_TOKEN_LOCATION=['cookies'],
+    JWT_COOKIE_CSRF_PROTECT=False,
 )
 
 security = AuthX(config=config)
@@ -39,6 +40,7 @@ async def login(
 
         token = security.create_access_token(uid=str(user.id))
         response.set_cookie(config.JWT_ACCESS_COOKIE_NAME, token, httponly=True)
+        response.set_cookie(config.JWT_ACCESS_CSRF_COOKIE_NAME, token, httponly=True)
         return AuthResponseSchema(access_token=token)
     except (UserNotFoundError, OtherRoleRequired, WrongUserPassword):
         raise HTTPException(401, detail={'message': 'Wrong auth data'})
