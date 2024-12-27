@@ -9,3 +9,8 @@ class UserAlreadyExistsError(BaseAppException):
 class UserNotFoundError(BaseAppException):
     def __init__(self):
         super().__init__(status_code=404, detail="Пользователь не найден")
+
+
+class WrongUserPassword(BaseAppException):
+    def __init__(self):
+        super().__init__(status_code=401, detail="Неверный пароль")
