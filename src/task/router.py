@@ -1,6 +1,9 @@
-from fastapi import APIRouter, Depends, status, Query
+from fastapi import APIRouter, Depends, status, Query, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.auth.role_validator import AuthRoleVerifier
+from src.auth.router import security
+from src.auth.utils import get_user
 from src.core.database.dependencies import get_session
 from src.core.database.repo import Repository
 
@@ -17,18 +20,29 @@ from src.task.schemas import TaskSchema, CreateTaskSchema, ResponseTaskSchema
 from src.group.services.getter import GroupGetter
 from src.teacher.services.getter import TeacherGetter
 from src.subject.services.getter import SubjectGetter
+from src.user.models import UserRole
 
 router = APIRouter(prefix="/tasks", tags=["Tasks"])
 
 
-@router.get("/", summary="Получить все задания", response_model=list[ResponseTaskSchema])
+@router.get(
+    path="/",
+    summary="Получить все задания",
+    response_model=list[ResponseTaskSchema],
+    dependencies=[Depends(security.access_token_required)],
+)
 async def get_all_tasks(
+        request: Request,
         group_name: str | None = Query(None, description="Название группы для фильтрации"),
         surname: str | None = Query(None, description="Фамилия преподавателя"),
         name: str | None = Query(None, description="Имя преподавателя"),
         patronym: str | None = Query(None, description="Отчество преподавателя"),
         subject_name: str | None = Query(None, description="Название предмета"),
-        session: AsyncSession = Depends(get_session)):
+        session: AsyncSession = Depends(get_session)
+):
+    user = await get_user(request, session)
+    AuthRoleVerifier(user).verify(required_role=UserRole.STUDENT)
+
     repo_task = Repository[Task](Task, session)
     repo_assignment = Repository[Assignment](Assignment, session)
     repo_subject = Repository[Subject](Subject, session)
@@ -79,8 +93,15 @@ async def get_all_tasks(
     return response
 
 
-@router.post("/", summary="Создать задание", response_model=TaskSchema, status_code=status.HTTP_201_CREATED)
+@router.post(
+    path="/",
+    summary="Создать задание",
+    response_model=TaskSchema,
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(security.access_token_required)],
+)
 async def create_task(
+        request: Request,
         task_name: str,
         points: int,
         group_name: str,
@@ -90,6 +111,9 @@ async def create_task(
         patronym: str,
         session: AsyncSession = Depends(get_session)
 ):
+    user = await get_user(request, session)
+    AuthRoleVerifier(user).verify(required_role=UserRole.TEACHER)
+
     repo_assignment = Repository[Assignment](Assignment, session)
 
     group_getter = GroupGetter(Repository[UniversityGroup](UniversityGroup, session))
@@ -111,10 +135,20 @@ async def create_task(
     return created_task
 
 
-@router.delete("/{task_id}", summary="Удалить задание", response_model=int)
+@router.delete(
+    path="/{task_id}",
+    summary="Удалить задание",
+    response_model=int,
+    dependencies=[Depends(security.access_token_required)],
+)
 async def delete_task(
+        request: Request,
         task_id: int,
-        session: AsyncSession = Depends(get_session)):
+        session: AsyncSession = Depends(get_session)
+):
+    user = await get_user(request, session)
+    AuthRoleVerifier(user).verify(required_role=UserRole.TEACHER)
+
     task_service = TaskService(Repository[Task](Task, session))
     await task_service.delete(task_id)
     return task_id

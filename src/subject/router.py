@@ -1,14 +1,16 @@
 from fastapi import APIRouter, Depends, status, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.auth.role_validator import AuthRoleVerifier
 from src.auth.router import security
+from src.auth.utils import get_user
 from src.core.database.repo import Repository
 from src.core.database.dependencies import get_session
-from src.settings import JWT_ACCESS_COOKIE_NAME
 
 from src.subject.models import Subject
 from src.subject.schemas import CreateSubjectSchema, SubjectSchema
 from src.subject.services.service import SubjectService
+from src.user.models import UserRole
 
 router = APIRouter(prefix="/subjects", tags=["Subjects"])
 
@@ -20,8 +22,8 @@ router = APIRouter(prefix="/subjects", tags=["Subjects"])
     dependencies=[Depends(security.access_token_required)],
 )
 async def get_all_subjects(request: Request, session: AsyncSession = Depends(get_session)):
-    token = await security.get_access_token_from_request(request)
-    security.verify_token(token, verify_csrf=False)
+    user = await get_user(request, session)
+    AuthRoleVerifier(user).verify(required_role=UserRole.STUDENT)
 
     repo = Repository[Subject](Subject, session)
     subjects = await repo.get_all()
@@ -40,8 +42,8 @@ async def create_subject(
         request: Request,
         session: AsyncSession = Depends(get_session)
 ):
-    token = await security.get_access_token_from_request(request)
-    security.verify_token(token, verify_csrf=False)
+    user = await get_user(request, session)
+    AuthRoleVerifier(user).verify(required_role=UserRole.ADMIN)
 
     subject_service = SubjectService(Repository[Subject](Subject, session))
     created_subject = await subject_service.create(subject_data)
@@ -60,8 +62,8 @@ async def delete_subject(
         request: Request,
         session: AsyncSession = Depends(get_session)
 ):
-    token = await security.get_access_token_from_request(request)
-    security.verify_token(token, verify_csrf=False)
+    user = await get_user(request, session)
+    AuthRoleVerifier(user).verify(required_role=UserRole.ADMIN)
 
     subject_service = SubjectService(Repository[Subject](Subject, session))
     await subject_service.delete(subject_id)
