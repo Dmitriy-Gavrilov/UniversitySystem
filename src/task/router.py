@@ -7,6 +7,7 @@ from src.core.database.repo import Repository
 from src.group.models import UniversityGroup
 from src.assignment.models import Assignment
 from src.task.services.creator import TaskCreator
+from src.task.services.service import TaskService
 from src.teacher.models import Teacher
 from src.subject.models import Subject
 from src.task.models import Task
@@ -108,3 +109,12 @@ async def create_task(
                                                               assignment_id=assignment.id))
 
     return created_task
+
+
+@router.delete("/{task_id}", summary="Удалить задание", response_model=int)
+async def delete_task(
+        task_id: int,
+        session: AsyncSession = Depends(get_session)):
+    task_service = TaskService(Repository[Task](Task, session))
+    await task_service.delete(task_id)
+    return task_id
