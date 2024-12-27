@@ -1,6 +1,7 @@
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 
 from src.core.database.dependencies import get_session_manager
 
@@ -42,6 +43,15 @@ async def auth(request: Request, call_next):
 def home_page():
     return {"message": "Start page"}
 
+
+# Настройка CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Разрешает запросы со всех источников
+    allow_credentials=True,
+    allow_methods=["*"],  # Разрешает все HTTP-методы
+    allow_headers=["*"],  # Разрешает все заголовки
+)
 
 app.include_router(router_students)
 app.include_router(router_users)
